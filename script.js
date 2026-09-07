@@ -315,11 +315,11 @@ function handleDragEnd(e) {
 let touchTargetIndex = null;
 
 function handleTouchStart(e, index) {
-  // Ignora se o slot estiver vazio ou se o toque foi em botões de ação
   if (!currentSlots[index] || e.target.closest(".action-btn")) return;
 
   draggedSlotIndex = index;
   e.currentTarget.classList.add("dragging");
+  e.currentTarget.style.touchAction = "none";
 }
 
 function handleTouchMove(e) {
@@ -352,6 +352,7 @@ function handleTouchEnd(e) {
   document.querySelectorAll(".idol-card").forEach((c) => {
     c.classList.remove("dragging");
     c.classList.remove("drag-over");
+    c.style.touchAction = "";
   });
 
   if (touchTargetIndex !== null && touchTargetIndex !== draggedSlotIndex) {
@@ -380,6 +381,8 @@ function renderGrid() {
     const card = document.createElement("div");
     card.className = `idol-card ${idol ? "draggable" : ""}`;
 
+    card.dataset.index = i;
+
     // desktop drag & drop
     card.draggable = idol !== null;
     card.ondragstart = (e) => handleDragStart(e, i);
@@ -390,9 +393,11 @@ function renderGrid() {
     card.ondragend = (e) => handleDragEnd(e);
 
     // mobile drag & drop
-    card.ontouchstart = (e) => handleTouchStart(e, i);
-    card.ontouchmove = (e) => handleTouchMove(e);
-    card.ontouchend = (e) => handleTouchEnd(e);
+    card.addEventListener("touchstart", (e) => handleTouchStart(e, i), {
+      passive: true,
+    });
+    card.addEventListener("touchmove", handleTouchMove, { passive: false });
+    card.addEventListener("touchend", handleTouchEnd, { passive: true });
 
     let content = `<span class="badge-rank">#${i + 1}</span>`;
 

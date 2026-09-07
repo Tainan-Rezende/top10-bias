@@ -309,32 +309,60 @@ function handleDragEnd(e) {
 }
 
 // ==========================================
-// TOUCH DRAG & DROP (MOBILE)
+// TOUCH DRAG & DROP COM LONG-PRESS (MOBILE)
 // ==========================================
 
 let touchTargetIndex = null;
+let touchTimer = null;
+let isLongPressActive = false;
+let touchStartX = 0;
+let touchStartY = 0;
 
 function handleTouchStart(e, index) {
-  if (!currentSlots[index] || e.target.closest(".action-btn")) return;
+  if (!currentSlots[index] || e.target.closest('.action-btn')) return;
 
-  draggedSlotIndex = index;
-  e.currentTarget.classList.add("dragging");
-  e.currentTarget.style.touchAction = "none";
+  const touch = e.touches[0];
+  touchStartX = touch.clientX;
+  touchStartY = touch.clientY;
+  isLongPressActive = false;
+
+  // Inicia contagem para ativar o arrasto (300ms)
+  touchTimer = setTimeout(() => {
+    isLongPressActive = true;
+    draggedSlotIndex = index;
+
+    const card = document.querySelector(`.idol-card[data-index="${index}"]`);
+    if (card) {
+      card.classList.add("dragging");
+      card.style.touchAction = "none";
+    }
+
+    // Feedback tátil no celular (se suportado)
+    if (navigator.vibrate) navigator.vibrate(40);
+    showToast("Arrastando posição...", "info");
+  }, 300);
 }
 
 function handleTouchMove(e) {
-  if (draggedSlotIndex === null) return;
+  const touch = e.touches[0];
+  const deltaX = Math.abs(touch.clientX - touchStartX);
+  const deltaY = Math.abs(touch.clientY - touchStartY);
 
-  // Evita o scroll da página enquanto arrasta o card
+  // Se o usuário moveu o dedo antes dos 300ms, cancela o drag e deixa a página rolar normalmente!
+  if (!isLongPressActive) {
+    if (deltaX > 8 || deltaY > 8) {
+      clearTimeout(touchTimer);
+    }
+    return;
+  }
+
+  // Se chegou aqui, o long-press foi confirmado: trava o scroll e executa o arrasto
   if (e.cancelable) e.preventDefault();
 
-  const touch = e.touches[0];
   const elementUnder = document.elementFromPoint(touch.clientX, touch.clientY);
   const cardUnder = elementUnder ? elementUnder.closest(".idol-card") : null;
 
-  document
-    .querySelectorAll(".idol-card")
-    .forEach((c) => c.classList.remove("drag-over"));
+  document.querySelectorAll(".idol-card").forEach(c => c.classList.remove("drag-over"));
 
   if (cardUnder && cardUnder.dataset.index !== undefined) {
     touchTargetIndex = parseInt(cardUnder.dataset.index, 10);
@@ -347,9 +375,15 @@ function handleTouchMove(e) {
 }
 
 function handleTouchEnd(e) {
-  if (draggedSlotIndex === null) return;
+  clearTimeout(touchTimer);
 
-  document.querySelectorAll(".idol-card").forEach((c) => {
+  if (!isLongPressActive || draggedSlotIndex === null) {
+    isLongPressActive = false;
+    draggedSlotIndex = null;
+    return;
+  }
+
+  document.querySelectorAll(".idol-card").forEach(c => {
     c.classList.remove("dragging");
     c.classList.remove("drag-over");
     c.style.touchAction = "";
@@ -360,9 +394,10 @@ function handleTouchEnd(e) {
     currentSlots[draggedSlotIndex] = currentSlots[touchTargetIndex];
     currentSlots[touchTargetIndex] = temp;
     renderGrid();
-    showToast("Position updated!");
+    showToast("Posição atualizada!", "success");
   }
 
+  isLongPressActive = false;
   draggedSlotIndex = null;
   touchTargetIndex = null;
 }

@@ -313,6 +313,7 @@ header p {
     box-shadow 0.2s ease,
     opacity 0.2s ease;
   user-select: none;
+  touch-action: pan-y;
 }
 
 .idol-card:hover {
@@ -897,7 +898,7 @@ header p {
 
   .idol-card {
     height: auto;
-    aspect-ratio: 3 / 4.2; /* Proporção harmônica tipo photocard */
+    aspect-ratio: 3 / 4.2;
     border-radius: 14px;
   }
 

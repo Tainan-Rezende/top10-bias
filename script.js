@@ -77,7 +77,8 @@ function handleLiveSearch(queryText) {
   const statusElem = document.getElementById("search-status");
 
   if (queryClean.length < 1) {
-    statusElem.innerText = "Type idol or group name (e.g. V, Lisa, BTS, Jennie)...";
+    statusElem.innerText =
+      "Type idol or group name (e.g. V, Lisa, BTS, Jennie)...";
     renderSearchResults([]);
     return;
   }
@@ -176,7 +177,7 @@ async function openGalleryModal(slotIndex, e) {
   const wikiPageTitle = idol.rawTitle || idol.name;
   const galleryQueryTitle = `${wikiPageTitle}|${wikiPageTitle}/Gallery`;
   const endpoint = `https://kpop.fandom.com/api.php?action=query&generator=images&titles=${encodeURIComponent(
-    galleryQueryTitle
+    galleryQueryTitle,
   )}&gimlimit=40&prop=imageinfo&iiprop=url&iiurlwidth=320&format=json&origin=*`;
 
   try {
@@ -308,6 +309,64 @@ function handleDragEnd(e) {
 }
 
 // ==========================================
+// TOUCH DRAG & DROP (MOBILE)
+// ==========================================
+
+let touchTargetIndex = null;
+
+function handleTouchStart(e, index) {
+  // Ignora se o slot estiver vazio ou se o toque foi em botões de ação
+  if (!currentSlots[index] || e.target.closest(".action-btn")) return;
+
+  draggedSlotIndex = index;
+  e.currentTarget.classList.add("dragging");
+}
+
+function handleTouchMove(e) {
+  if (draggedSlotIndex === null) return;
+
+  // Evita o scroll da página enquanto arrasta o card
+  if (e.cancelable) e.preventDefault();
+
+  const touch = e.touches[0];
+  const elementUnder = document.elementFromPoint(touch.clientX, touch.clientY);
+  const cardUnder = elementUnder ? elementUnder.closest(".idol-card") : null;
+
+  document
+    .querySelectorAll(".idol-card")
+    .forEach((c) => c.classList.remove("drag-over"));
+
+  if (cardUnder && cardUnder.dataset.index !== undefined) {
+    touchTargetIndex = parseInt(cardUnder.dataset.index, 10);
+    if (touchTargetIndex !== draggedSlotIndex) {
+      cardUnder.classList.add("drag-over");
+    }
+  } else {
+    touchTargetIndex = null;
+  }
+}
+
+function handleTouchEnd(e) {
+  if (draggedSlotIndex === null) return;
+
+  document.querySelectorAll(".idol-card").forEach((c) => {
+    c.classList.remove("dragging");
+    c.classList.remove("drag-over");
+  });
+
+  if (touchTargetIndex !== null && touchTargetIndex !== draggedSlotIndex) {
+    const temp = currentSlots[draggedSlotIndex];
+    currentSlots[draggedSlotIndex] = currentSlots[touchTargetIndex];
+    currentSlots[touchTargetIndex] = temp;
+    renderGrid();
+    showToast("Position updated!");
+  }
+
+  draggedSlotIndex = null;
+  touchTargetIndex = null;
+}
+
+// ==========================================
 // RENDERIZAÇÃO DO GRID PRINCIPAL
 // ==========================================
 
@@ -321,6 +380,7 @@ function renderGrid() {
     const card = document.createElement("div");
     card.className = `idol-card ${idol ? "draggable" : ""}`;
 
+    // desktop drag & drop
     card.draggable = idol !== null;
     card.ondragstart = (e) => handleDragStart(e, i);
     card.ondragover = (e) => handleDragOver(e);
@@ -328,6 +388,11 @@ function renderGrid() {
     card.ondragleave = (e) => handleDragLeave(e);
     card.ondrop = (e) => handleDrop(e, i);
     card.ondragend = (e) => handleDragEnd(e);
+
+    // mobile drag & drop
+    card.ontouchstart = (e) => handleTouchStart(e, i);
+    card.ontouchmove = (e) => handleTouchMove(e);
+    card.ontouchend = (e) => handleTouchEnd(e);
 
     let content = `<span class="badge-rank">#${i + 1}</span>`;
 
@@ -464,7 +529,7 @@ async function confirmSaveRanking() {
           p_idols: currentSlots,
           p_pin: pin,
         }),
-      }
+      },
     );
 
     const result = await response.json();
@@ -523,7 +588,7 @@ async function fetchRankingFromCloud(code) {
         apikey: SUPABASE_ANON_KEY,
         Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
       },
-    }
+    },
   );
 
   const data = await response.json();
@@ -649,8 +714,8 @@ async function exportDirectCanvas() {
 
   const loadedImages = await Promise.all(
     currentSlots.map((slot) =>
-      slot ? loadImagePromise(slot.img) : Promise.resolve(null)
-    )
+      slot ? loadImagePromise(slot.img) : Promise.resolve(null),
+    ),
   );
 
   const gridStartY = padding + headerH;
@@ -730,7 +795,7 @@ async function exportDirectCanvas() {
       badgeX,
       badgeY,
       badgeX + badgeW,
-      badgeY + badgeH
+      badgeY + badgeH,
     );
     badgeGrad.addColorStop(0, "#6366f1");
     badgeGrad.addColorStop(1, "#4f46e5");
@@ -744,7 +809,7 @@ async function exportDirectCanvas() {
     ctx.fillText(
       `#${i + 1}`,
       badgeX + badgeW / 2,
-      badgeY + badgeH / 2 + 0.5 * scale
+      badgeY + badgeH / 2 + 0.5 * scale,
     );
     ctx.restore();
   }

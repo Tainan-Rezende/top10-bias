@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Top 10 K-Pop Idols - Bias Ranking</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=JetBrains+Mono:wght@700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.3.1/css/all.min.css"
+      integrity="sha512-QeR2VH+lsBE5LSAe1Q5EnTBbe7XTBubt8dG93Y7gidSgdMCr8nVqKcfKAMyN96SV8KDbZVTDXChatu5G2KQGzg=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <!-- Toast Notification System -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- Shared Banner -->
+    <div id="shared-banner" class="shared-banner" style="display: none">
+      <span
+        >👀 Viewing shared ranking: <strong id="shared-code-tag"></strong
+      ></span>
+      <button class="btn btn-sm-primary" onclick="startOwnRanking()">
+        ✨ Create My Own
+      </button>
+    </div>
+
+    <header>
+      <div class="tag-status">K-POP BIAS RANKER</div>
+      <h1>Top 10 K-Pop Idols</h1>
+      <p>
+        Curate your ultimate bias ranking, choose official concept photos, and
+        export in high resolution.
+      </p>
+    </header>
+
+    <!-- Controls -->
+    <section class="controls">
+      <button class="btn btn-primary" onclick="openSaveModal()">
+        💾 Save Ranking
+      </button>
+      <div class="input-wrapper">
+        <input
+          type="text"
+          id="access-key"
+          placeholder="Enter Code (e.g. kP8xN4mQ)"
+          autocomplete="off"
+          spellcheck="false"
+        />
+      </div>
+      <button class="btn btn-secondary" onclick="loadList()">🔄 Load</button>
+      <button class="btn btn-secondary" onclick="copyShareLink()">
+        🔗 Share Link
+      </button>
+      <button class="btn btn-danger" onclick="clearAllSlots()">🗑️ Reset</button>
+      <button class="btn btn-accent" onclick="exportDirectCanvas()">
+        📸 Download Image
+      </button>
+    </section>
+
+    <!-- Showcase Board -->
+    <main id="capture-area">
+      <div class="capture-header">
+        <span class="sub-badge">PERSONAL RANKING</span>
+        <h2>MY TOP 10 IDOLS</h2>
+      </div>
+
+      <div class="grid-container" id="grid"></div>
+
+      <div class="capture-footer">
+        <span>Created with K-Pop Top 10 Maker</span>
+        <span class="author-tag">@yuutokotaki</span>
+      </div>
+    </main>
+
+    <footer class="site-footer">
+      <p>
+        Made by
+        <a
+          href="https://t.me/yuutokotaki"
+          target="_blank"
+          rel="noopener noreferrer"
+          >@yuutokotaki</a
+        >
+        • Live K-Pop Database
+      </p>
+    </footer>
+
+    <!-- Modal 1: Search Idols -->
+    <div class="modal-backdrop" id="modal-search">
+      <div class="modal">
+        <div class="modal-header">
+          <h3>Search Idol</h3>
+          <button class="close-btn" onclick="closeSearchModal()">✕</button>
+        </div>
+        <input
+          type="text"
+          id="search"
+          class="search-input"
+          placeholder="Search by idol or group name..."
+          oninput="handleLiveSearch(this.value)"
+          autocomplete="off"
+          spellcheck="false"
+        />
+        <div class="status-indicator" id="search-status">
+          Type at least 2 letters to search...
+        </div>
+        <div class="idol-list" id="search-list"></div>
+      </div>
+    </div>
+
+    <!-- Modal 2: Gallery Picker -->
+    <div class="modal-backdrop" id="modal-gallery">
+      <div class="modal modal-wide">
+        <div class="modal-header">
+          <h3 id="gallery-title">Select Concept Photo</h3>
+          <button class="close-btn" onclick="closeGalleryModal()">✕</button>
+        </div>
+        <div class="status-indicator" id="gallery-status">
+          Fetching photos...
+        </div>
+        <div class="gallery-grid" id="gallery-list"></div>
+      </div>
+    </div>
+
+    <!-- Modal 3: Save & PIN Modal -->
+    <div class="modal-backdrop" id="modal-save">
+      <div class="modal modal-save-box">
+        <div class="modal-header">
+          <h3>🔒 Save & Protect Ranking</h3>
+          <button class="close-btn" onclick="closeSaveModal()">✕</button>
+        </div>
+        <p class="modal-desc">
+          Set a security PIN. A random unique code will be assigned to your
+          ranking.
+        </p>
+
+        <div class="form-group">
+          <label>Choose your Security PIN (min. 4 characters)</label>
+          <input
+            type="password"
+            id="save-pin-input"
+            class="search-input"
+            placeholder="e.g. 1997 or mySecretPin"
+            maxlength="24"
+          />
+        </div>
+
+        <div class="security-warning">
+          ⚠️ <strong>Important:</strong> Keep your PIN safe. If lost, your
+          ranking cannot be updated or recovered.
+        </div>
+
+        <div class="modal-actions">
+          <button class="btn btn-secondary" onclick="closeSaveModal()">
+            Cancel
+          </button>
+          <button class="btn btn-primary" onclick="confirmSaveRanking()">
+            Confirm & Save
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal 4: Success & Share Modal -->
+    <div class="modal-backdrop" id="modal-success">
+      <div class="modal modal-save-box text-center">
+        <div class="success-icon">🎉</div>
+        <h3 id="success-title">Ranking Saved!</h3>
+        <p class="modal-desc">
+          Your ranking is live on the cloud. Share your link with friends!
+        </p>
+
+        <div class="code-display-card">
+          <span class="code-label">YOUR RANKING CODE</span>
+          <strong id="success-code-display" class="code-value">--------</strong>
+        </div>
+
+        <div class="modal-actions full-width">
+          <button class="btn btn-primary full-btn" onclick="copySuccessLink()">
+            📋 Copy Share Link & Code
+          </button>
+          <button
+            class="btn btn-secondary full-btn"
+            onclick="closeSuccessModal()"
+          >
+            Done
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>

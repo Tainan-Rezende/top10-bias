@@ -356,12 +356,17 @@ header p {
 }
 
 .idol-card::after {
-  content: '';
+  content: "";
   position: absolute;
   inset: 0;
-  background: 
+  background:
     linear-gradient(180deg, rgba(9, 11, 18, 0.45) 0%, rgba(9, 11, 18, 0) 22%),
-    linear-gradient(180deg, rgba(13, 17, 26, 0) 35%, rgba(13, 17, 26, 0.75) 68%, rgba(9, 11, 18, 0.98) 100%);
+    linear-gradient(
+      180deg,
+      rgba(13, 17, 26, 0) 35%,
+      rgba(13, 17, 26, 0.75) 68%,
+      rgba(9, 11, 18, 0.98) 100%
+    );
   z-index: 2;
   pointer-events: none;
 }
@@ -415,7 +420,9 @@ header p {
   color: rgba(255, 255, 255, 0.88);
   font-size: 0.68rem;
   line-height: 1;
-  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.6)); /* Garante leitura em fotos 100% brancas */
+  filter: drop-shadow(
+    0 1px 2px rgba(0, 0, 0, 0.6)
+  ); /* Garante leitura em fotos 100% brancas */
   transition: color 0.15s ease;
 }
 
@@ -700,7 +707,6 @@ header p {
   overflow-y: auto;
   max-height: 420px;
   padding: 4px;
-  contain: content;
 }
 
 .gallery-card {
@@ -714,7 +720,6 @@ header p {
   transition:
     transform 0.15s ease,
     box-shadow 0.15s ease;
-  contain: paint;
 }
 
 .gallery-card:hover {
@@ -938,14 +943,14 @@ header p {
 
   .gallery-grid {
     grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
-    align-items: start;
+    gap: 10px;
+    display: grid;
   }
 
   .gallery-card {
     width: 100%;
-    min-height: 180px;
-    aspect-ratio: 3 / 4;
+    height: 190px;
+    aspect-ratio: unset;
   }
 }
 

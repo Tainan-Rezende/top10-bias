@@ -938,6 +938,14 @@ header p {
 
   .gallery-grid {
     grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    align-items: start;
+  }
+
+  .gallery-card {
+    width: 100%;
+    min-height: 180px;
+    aspect-ratio: 3 / 4;
   }
 }
 
